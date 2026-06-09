@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, cargando } = useAuth();
+  const [registroPendiente, setRegistroPendiente] = useState(null);
+
+  useEffect(() => {
+  // Al abrir el login, revisamos si hay un registro a medio terminar
+  AsyncStorage.getItem('registroPendiente').then((id) => {
+    if (id) setRegistroPendiente(id);
+  });
+}, []);
 
   async function handleLogin() {
     // Validación de campos obligatorios (manejo de errores del front)
@@ -40,8 +50,25 @@ export default function LoginScreen({ navigation }) {
       {/* Tabs */}
       <View style={styles.tabs}>
         <Text style={styles.tabActive}>Iniciar sesión</Text>
-        <Text style={styles.tabInactive}>Registrarse</Text>
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate('RegistroPaso1')}>
+          <Text style={styles.tabInactive}>Registrarse</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Aviso de registro pendiente — va FUERA de los tabs */}
+      {registroPendiente && (
+        <TouchableOpacity
+          style={styles.pendienteBox}
+          onPress={() => navigation.navigate('CuentaEnRevision', {
+            usuarioId: Number(registroPendiente),
+            mensaje: 'Tenés un registro pendiente de completar.',
+          })}
+        >
+          <Text style={styles.pendienteText}>
+            Tenés un registro sin terminar · Continuar →
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Campo email */}
       <Text style={styles.label}>CORREO ELECTRÓNICO</Text>
@@ -79,9 +106,11 @@ export default function LoginScreen({ navigation }) {
         )}
       </TouchableOpacity>
 
-      <Text style={styles.registerLink}>
-        ¿No tenés cuenta? <Text style={{ color: colors.gold }}>Registrate</Text>
-      </Text>
+      <TouchableOpacity onPress={() => navigation.navigate('RegistroPaso1')}>
+        <Text style={styles.registerLink}>
+          ¿No tenés cuenta? <Text style={{ color: colors.gold }}>Registrate</Text>
+        </Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
@@ -158,4 +187,18 @@ const styles = StyleSheet.create({
     marginTop: 24,
     fontSize: 13,
   },
+  pendienteBox: {
+  backgroundColor: 'rgba(201,168,76,0.1)',
+  borderWidth: 1,
+  borderColor: 'rgba(201,168,76,0.3)',
+  borderRadius: 8,
+  paddingVertical: 8,
+  paddingHorizontal: 12,
+  marginTop: 16,
+},
+pendienteText: {
+  color: colors.gold,
+  fontSize: 12,
+  textAlign: 'center',
+},
 });

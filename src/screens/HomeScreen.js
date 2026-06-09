@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, ActivityIndicator, RefreshControl
-} from 'react-native';
+  StyleSheet, ActivityIndicator, RefreshControl, ScrollView} from 'react-native';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
 import { listarSubastas } from '../api/subastas';
@@ -12,6 +11,8 @@ export default function HomeScreen({ navigation }) {
   const [subastas, setSubastas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [filtroCategoria, setFiltroCategoria] = useState('todas');
+
 
   // Trae las subastas del backend
   async function cargarSubastas() {
@@ -31,6 +32,13 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     cargarSubastas();
   }, []);
+
+  const CATEGORIAS = ['todas', 'comun', 'especial', 'plata', 'oro', 'platino'];
+
+  // Filtra las subastas según la categoría seleccionada
+  const subastasFiltradas = filtroCategoria === 'todas'
+  ? subastas
+  : subastas.filter((s) => s.categoria === filtroCategoria);
 
   // Card de cada subasta
   function renderSubasta({ item }) {
@@ -65,6 +73,33 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
+      {/* Filtros por categoría */}
+      <View style={styles.filtrosContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtrosScroll}
+        >
+          {CATEGORIAS.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.chip,
+                filtroCategoria === cat && styles.chipActivo,
+              ]}
+              onPress={() => setFiltroCategoria(cat)}
+            >
+              <Text style={[
+                styles.chipText,
+                filtroCategoria === cat && styles.chipTextActivo,
+              ]}>
+                {cat === 'todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <Text style={styles.seccion}>SUBASTAS ACTIVAS</Text>
 
       {/* Estados de carga / error / lista */}
@@ -77,11 +112,11 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.retryText}>REINTENTAR</Text>
           </TouchableOpacity>
         </View>
-      ) : subastas.length === 0 ? (
+      ) : subastasFiltradas.length === 0 ? (
         <Text style={styles.vacio}>No hay subastas activas en este momento</Text>
       ) : (
         <FlatList
-          data={subastas}
+          data={subastasFiltradas}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderSubasta}
           refreshControl={
@@ -209,4 +244,32 @@ const styles = StyleSheet.create({
     color: colors.gold,
     letterSpacing: 1,
   },
+  filtrosContainer: {
+  marginBottom: 16,
+},
+filtrosScroll: {
+  gap: 8,
+  paddingRight: 20,
+},
+chip: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 20,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+},
+chipActivo: {
+  backgroundColor: colors.gold,
+  borderColor: colors.gold,
+},
+chipText: {
+  color: colors.textSecondary,
+  fontSize: 13,
+},
+chipTextActivo: {
+  color: colors.background,
+  fontWeight: 'bold',
+},
+
 });

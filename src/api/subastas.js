@@ -29,3 +29,19 @@ export async function realizarPuja(subastaId, itemId, monto, medioPagoId) {
   return response.data;
 }
 
+// GET si el usuario puede pujar en la subasta
+export async function puedePujar(subastaId) {
+  const response = await client.get(`/auctions/${subastaId}/can-bid`);
+  return response.data; // { puedePujar, motivo }
+}
+
+// GET detalle de un ítem con fotos y descripción completa
+export async function obtenerDetalleItem(subastaId, itemId) {
+  const response = await client.get(`/auctions/${subastaId}/items/${itemId}`);
+  return response.data;
+}
+
+export async function obtenerHistorialPujas(subastaId, itemId) {
+  const response = await client.get(`/auctions/${subastaId}/items/${itemId}/bids`);
+  return response.data; // [{ pujaId, monto, numeroPostor, esMia }]
+}
