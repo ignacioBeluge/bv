@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
 
@@ -64,13 +64,13 @@ export default function PerfilScreen({ navigation }) {
           <Text style={styles.filaFlecha}>›</Text>
         </TouchableOpacity>
         <View style={styles.separador} />
-        <TouchableOpacity style={styles.fila}>
+        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Próximamente', 'Las notificaciones estarán disponibles en la próxima versión.')}>
           <Text style={styles.filaIcono}>🔔</Text>
           <Text style={styles.filaTexto}>Notificaciones</Text>
           <Text style={styles.filaFlecha}>›</Text>
         </TouchableOpacity>
         <View style={styles.separador} />
-        <TouchableOpacity style={styles.fila}>
+        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Próximamente', 'Mis métricas estará disponible en la próxima versión.')}>
           <Text style={styles.filaIcono}>📊</Text>
           <Text style={styles.filaTexto}>Mis métricas</Text>
           <Text style={styles.filaFlecha}>›</Text>
@@ -80,13 +80,13 @@ export default function PerfilScreen({ navigation }) {
       {/* Sección: ayuda */}
       <Text style={styles.seccionTitulo}>AYUDA</Text>
       <View style={styles.card}>
-        <TouchableOpacity style={styles.fila}>
+        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Centro de ayuda', 'Para consultas escribinos a soporte@bidvault.com')}>
           <Text style={styles.filaIcono}>❓</Text>
           <Text style={styles.filaTexto}>Centro de ayuda</Text>
           <Text style={styles.filaFlecha}>›</Text>
         </TouchableOpacity>
         <View style={styles.separador} />
-        <TouchableOpacity style={styles.fila}>
+        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Términos y condiciones', 'Al usar BidVault aceptás que las subastas son dinámicas ascendentes. El ganador tiene 72hs para presentar los fondos. El incumplimiento genera una multa del 10% y el bloqueo de la cuenta.')}>
           <Text style={styles.filaIcono}>📄</Text>
           <Text style={styles.filaTexto}>Términos y condiciones</Text>
           <Text style={styles.filaFlecha}>›</Text>
