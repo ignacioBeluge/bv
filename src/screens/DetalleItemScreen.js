@@ -60,28 +60,28 @@ export default function DetalleItemScreen({ route, navigation }) {
       </TouchableOpacity>
 
       {/* Carrusel de fotos */}
-      {tieneFotos ? (
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={styles.carrusel}
-        >
-          {item.fotos.map((foto, index) => (
-            <Image
-              key={index}
-              source={{ uri: 'https://picsum.photos/320/240' }}
-              style={styles.foto}
-              resizeMode="cover"
-            />
-          ))}
-        </ScrollView>
-      ) : (
-        <View style={styles.fotoPlaceholder}>
-          <Text style={styles.fotoPlaceholderIcono}>🏺</Text>
-          <Text style={styles.fotoPlaceholderText}>Sin fotos disponibles</Text>
-        </View>
-      )}
+{tieneFotos ? (
+  <ScrollView
+    horizontal
+    pagingEnabled
+    showsHorizontalScrollIndicator={false}
+    style={styles.carrusel}
+  >
+    {item.fotos.map((foto, index) => (
+      <Image
+        key={index}
+        source={{ uri: foto }}
+        style={styles.foto}
+        resizeMode="cover"
+      />
+    ))}
+  </ScrollView>
+) : (
+  <View style={styles.fotoPlaceholder}>
+    <Text style={styles.fotoPlaceholderIcono}>🏺</Text>
+    <Text style={styles.fotoPlaceholderText}>Sin fotos disponibles</Text>
+  </View>
+)}
 
       {/* Indicador de cantidad de fotos */}
       {tieneFotos && (

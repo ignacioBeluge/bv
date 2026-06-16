@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator
-} from 'react-native';
+  View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { obtenerSubasta } from '../api/subastas';
 
@@ -39,9 +38,13 @@ export default function CatalogoScreen({ route, navigation }) {
         })}
       >
         {/* Placeholder de imagen del ítem */}
-        <View style={styles.cardImagen}>
-          <Text style={styles.cardImagenIcono}>🏺</Text>
-        </View>
+        {item.fotoPrincipal ? (
+          <Image source={{ uri: item.fotoPrincipal }} style={styles.cardImagen} />
+        ) : (
+          <View style={styles.cardImagen}>
+            <Text style={styles.cardImagenIcono}>🏺</Text>
+          </View>
+        )}
         <Text style={styles.cardNombre} numberOfLines={2}>
           {item.descripcion || 'Sin descripción'}
         </Text>

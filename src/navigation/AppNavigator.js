@@ -14,6 +14,9 @@ import MediosPagoScreen from '../screens/MediosPagoScreen';
 import AgregarTarjetaScreen from '../screens/AgregarTarjetaScreen';
 import AgregarCuentaScreen from '../screens/AgregarCuentaScreen';
 import AgregarChequeScreen from '../screens/AgregarChequeScreen';
+import PublicarArticuloScreen from '../screens/PublicarArticuloScreen';
+import DetalleArticuloScreen from '../screens/DetalleArticuloScreen';
+
 
 
 
@@ -43,6 +46,8 @@ export default function AppNavigator() {
         <Stack.Screen name="AgregarTarjeta" component={AgregarTarjetaScreen} />
         <Stack.Screen name="AgregarCuenta" component={AgregarCuentaScreen} />
         <Stack.Screen name="AgregarCheque" component={AgregarChequeScreen} />
+        <Stack.Screen name="PublicarArticulo" component={PublicarArticuloScreen} />
+        <Stack.Screen name="DetalleArticulo" component={DetalleArticuloScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
