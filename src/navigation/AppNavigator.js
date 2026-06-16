@@ -16,6 +16,8 @@ import AgregarCuentaScreen from '../screens/AgregarCuentaScreen';
 import AgregarChequeScreen from '../screens/AgregarChequeScreen';
 import PublicarArticuloScreen from '../screens/PublicarArticuloScreen';
 import DetalleArticuloScreen from '../screens/DetalleArticuloScreen';
+import SeguroScreen from '../screens/SeguroScreen';
+import MultasScreen from '../screens/MultasScreen';
 
 
 
@@ -48,6 +50,8 @@ export default function AppNavigator() {
         <Stack.Screen name="AgregarCheque" component={AgregarChequeScreen} />
         <Stack.Screen name="PublicarArticulo" component={PublicarArticuloScreen} />
         <Stack.Screen name="DetalleArticulo" component={DetalleArticuloScreen} />
+        <Stack.Screen name="Seguro" component={SeguroScreen} />
+        <Stack.Screen name="Multas" component={MultasScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

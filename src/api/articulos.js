@@ -23,3 +23,15 @@ export async function responderCondiciones(id, acepta) {
   const response = await client.post(`/articulos/${id}/responder`, { acepta });
   return response.data;
 }
+
+// GET datos del seguro de un artículo
+export async function obtenerSeguro(productoId) {
+  const response = await client.get(`/articulos/${productoId}/seguro`);
+  return response.data;
+}
+
+// POST solicitar ampliación de póliza
+export async function ampliarPoliza(productoId) {
+  const response = await client.post(`/articulos/${productoId}/seguro/ampliar`);
+  return response.data;
+}

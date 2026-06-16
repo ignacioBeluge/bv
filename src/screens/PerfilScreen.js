@@ -55,6 +55,15 @@ export default function PerfilScreen({ navigation }) {
           <Text style={styles.filaFlecha}>›</Text>
         </TouchableOpacity>
         <View style={styles.separador} />
+        <TouchableOpacity
+          style={styles.fila}
+          onPress={() => navigation.navigate('Multas')}
+        >
+          <Text style={styles.filaIcono}>⚠️</Text>
+          <Text style={styles.filaTexto}>Mis multas</Text>
+          <Text style={styles.filaFlecha}>›</Text>
+        </TouchableOpacity>
+        <View style={styles.separador} />
         <TouchableOpacity style={styles.fila}>
           <Text style={styles.filaIcono}>🔔</Text>
           <Text style={styles.filaTexto}>Notificaciones</Text>

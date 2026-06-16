@@ -88,6 +88,19 @@ export default function DetalleArticuloScreen({ route, navigation }) {
         </View>
       )}
 
+      {/* Botón seguro — visible cuando el artículo está aceptado o en subasta */}
+      {(articulo.estado === 'ACEPTADO' || articulo.estado === 'EN_SUBASTA') && (
+        <TouchableOpacity
+          style={styles.botonSeguro}
+          onPress={() => navigation.navigate('Seguro', {
+            productoId: id,
+            nombreArticulo: articulo.nombre,
+          })}
+        >
+          <Text style={styles.botonSeguroTexto}>🛡️ Ver seguro de la pieza</Text>
+        </TouchableOpacity>
+      )}
+
       {/* Si tiene precio asignado, mostrar condiciones + botones */}
       {articulo.estado === 'PRECIO_ASIGNADO' && (
         <>
@@ -168,4 +181,10 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 16, alignItems: 'center',
   },
   botonAceptarText: { color: colors.background, fontWeight: 'bold', letterSpacing: 1 },
+  botonSeguro: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.gold,
+    borderRadius: 12, padding: 14, marginTop: 16,
+  },
+  botonSeguroTexto: { color: colors.gold, fontWeight: '600', fontSize: 14 },
 });
