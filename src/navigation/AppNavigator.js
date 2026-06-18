@@ -18,6 +18,7 @@ import PublicarArticuloScreen from '../screens/PublicarArticuloScreen';
 import DetalleArticuloScreen from '../screens/DetalleArticuloScreen';
 import SeguroScreen from '../screens/SeguroScreen';
 import MultasScreen from '../screens/MultasScreen';
+import SeleccionarMedioPagoScreen from '../screens/SeleccionarMedioPagoScreen';
 
 
 
@@ -52,6 +53,7 @@ export default function AppNavigator() {
         <Stack.Screen name="DetalleArticulo" component={DetalleArticuloScreen} />
         <Stack.Screen name="Seguro" component={SeguroScreen} />
         <Stack.Screen name="Multas" component={MultasScreen} />
+        <Stack.Screen name="SeleccionarMedioPago" component={SeleccionarMedioPagoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

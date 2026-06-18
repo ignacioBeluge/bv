@@ -28,33 +28,36 @@ export default function CatalogoScreen({ route, navigation }) {
     cargarCatalogo();
   }, []);
 
-  function renderItem({ item }) {
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate('DetalleItem', {
-          subastaId,
-          itemId: item.id,
-        })}
-      >
-        {/* Placeholder de imagen del ítem */}
-        {item.fotoPrincipal ? (
-          <Image source={{ uri: item.fotoPrincipal }} style={styles.cardImagen} />
-        ) : (
-          <View style={styles.cardImagen}>
-            <Text style={styles.cardImagenIcono}>🏺</Text>
-          </View>
-        )}
-        <Text style={styles.cardNombre} numberOfLines={2}>
-          {item.descripcion || 'Sin descripción'}
-        </Text>
-        <Text style={styles.cardBase}>Base: ${item.precioBase}</Text>
-        {item.mejorOfertaActual != null && (
-          <Text style={styles.cardOferta}>Oferta: ${item.mejorOfertaActual}</Text>
-        )}
-      </TouchableOpacity>
-    );
-  }
+function renderItem({ item }) {
+  const vendido = item.subastado === 'si';
+
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('DetalleItem', { subastaId, itemId: item.id })}
+    >
+      {item.fotoPrincipal ? (
+        <Image source={{ uri: item.fotoPrincipal }} style={styles.cardImagen} />
+      ) : (
+        <View style={styles.cardImagen}>
+          <Text style={styles.cardImagenIcono}>🏺</Text>
+        </View>
+      )}
+
+      {/* Badge VENDIDO */}
+      {vendido && (
+        <View style={styles.vendidoBadge}>
+          <Text style={styles.vendidoText}>VENDIDO</Text>
+        </View>
+      )}
+
+      <Text style={styles.cardNombre} numberOfLines={2}>
+        {item.descripcion || 'Sin descripción'}
+      </Text>
+      <Text style={styles.cardBase}>Base: ${item.precioBase}</Text>
+    </TouchableOpacity>
+  );
+}
 
   if (cargando) {
     return (
@@ -129,4 +132,19 @@ const styles = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12,
   },
   retryText: { color: colors.gold, letterSpacing: 1 },
+  vendidoBadge: {
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  backgroundColor: colors.error,
+  borderRadius: 6,
+  paddingHorizontal: 8,
+  paddingVertical: 3,
+},
+vendidoText: {
+  color: '#fff',
+  fontSize: 9,
+  fontWeight: 'bold',
+  letterSpacing: 1,
+},
 });

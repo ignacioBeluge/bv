@@ -35,3 +35,9 @@ export async function ampliarPoliza(productoId) {
   const response = await client.post(`/articulos/${productoId}/seguro/ampliar`);
   return response.data;
 }
+
+// POST confirmar que envió el producto
+export async function confirmarEnvio(id) {
+  const response = await client.post(`/articulos/${id}/confirmar-envio`);
+  return response.data;
+}

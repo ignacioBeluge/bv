@@ -5,11 +5,11 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { colors } from '../theme/colors';
-import { obtenerLimites, realizarPuja, puedePujar, obtenerHistorialPujas  } from '../api/subastas';
+import { obtenerLimites, realizarPuja, puedePujar, obtenerHistorialPujas, obtenerEstadoRemate } from '../api/subastas';
 import { misMediosDePago } from '../api/mediosPago';
 
 export default function PujaScreen({ route, navigation }) {
-  const { subastaId, itemId, descripcion } = route.params;
+  const { subastaId, itemId, descripcion, medioPagoId  } = route.params;
 
   const [limites, setLimites] = useState(null);
   const [montoPuja, setMontoPuja] = useState(0);
@@ -17,11 +17,13 @@ export default function PujaScreen({ route, navigation }) {
   const [pujando, setPujando] = useState(false);
   const [error, setError] = useState(null);
   const [historial, setHistorial] = useState([]);
-  const [medioPagoId, setMedioPagoId] = useState(null);
 
   // NUEVO: estado para saber si puede pujar
   const [habilitado, setHabilitado] = useState(true);
   const [motivoBloqueo, setMotivoBloqueo] = useState(null);
+
+  const [remate, setRemate] = useState(null);        // estado del remate
+  const [resultado, setResultado] = useState(null);  // resultado cuando cierra
 
 async function cargarDatos() {
   setCargando(true);
@@ -38,18 +40,39 @@ async function cargarDatos() {
     const hist = await obtenerHistorialPujas(subastaId, itemId);
     setHistorial(hist);
 
-    // NUEVO: traer el medio de pago verificado del usuario
-    const medios = await misMediosDePago();
-    const verificado = medios.find((m) => m.verificado === 'si');
-    if (verificado) {
-      setMedioPagoId(verificado.id);
-    }
   } catch (e) {
     setError('No se pudieron cargar los datos de la subasta');
   } finally {
     setCargando(false);
   }
 }
+
+  // Polling del estado del remate cada 5 segundos
+useEffect(() => {
+  let intervalo;
+
+  async function consultarRemate() {
+    try {
+      const estado = await obtenerEstadoRemate(subastaId, itemId);
+      setRemate(estado);
+
+      // Si el remate cerró, guardamos el resultado y frenamos el polling
+      if (estado.cerrado) {
+        setResultado(estado);
+        clearInterval(intervalo);
+      }
+    } catch (e) {
+      // si falla una consulta, seguimos intentando
+    }
+  }
+
+  // Consulta inmediata + cada 5 seg
+  consultarRemate();
+  intervalo = setInterval(consultarRemate, 5000);
+
+  // Limpiar al salir de la pantalla
+  return () => clearInterval(intervalo);
+}, [subastaId, itemId]);
 
   useEffect(() => {
     cargarDatos();
@@ -114,6 +137,54 @@ async function handlePujar() {
       {/* Oferta actual — se muestra siempre */}
       <View style={styles.infoBox}>
         <Text style={styles.infoLabel}>MEJOR OFERTA ACTUAL</Text>
+        {/* ─── Estado del remate ─── */}
+{remate && remate.enRemate && !remate.cerrado && (
+  <View style={styles.remateBox}>
+    <View style={styles.remateDot} />
+    <Text style={styles.remateLabel}>REMATE EN VIVO</Text>
+    <Text style={styles.remateCountdown}>
+      {remate.segundosRestantes}s
+    </Text>
+    <Text style={styles.remateSubtexto}>
+      Si nadie puja, se cierra
+    </Text>
+  </View>
+)}
+
+{/* ─── Resultado cuando cierra ─── */}
+{resultado && resultado.cerrado && (
+  <View style={styles.resultadoBox}>
+    {resultado.ganaste ? (
+      <>
+        <Text style={styles.resultadoIcono}>🏆</Text>
+        <Text style={styles.resultadoTitulo}>¡Ganaste!</Text>
+        <Text style={styles.resultadoMonto}>
+          ${Number(resultado.montoFinal).toLocaleString('es-AR')}
+        </Text>
+        <Text style={styles.resultadoTexto}>
+          Te llegará un mensaje con el detalle de pago
+        </Text>
+      </>
+    ) : resultado.ganaEmpresa ? (
+      <>
+        <Text style={styles.resultadoIcono}>🏢</Text>
+        <Text style={styles.resultadoTitulo}>Sin ofertas</Text>
+        <Text style={styles.resultadoTexto}>
+          La empresa compró el artículo al precio base
+        </Text>
+      </>
+    ) : (
+      <>
+        <Text style={styles.resultadoIcono}>😔</Text>
+        <Text style={styles.resultadoTitulo}>No ganaste</Text>
+        <Text style={styles.resultadoTexto}>
+          Ganó el Postor {resultado.numeroPostorGanador} con $
+          {Number(resultado.montoFinal).toLocaleString('es-AR')}
+        </Text>
+      </>
+    )}
+  </View>
+)}
         <Text style={styles.infoValor}>${limites.mejorOfertaActual}</Text>
       </View>
 
@@ -360,5 +431,67 @@ historialMonto: {
 historialMioText: {
   color: colors.gold,
   fontWeight: 'bold',
+},
+remateBox: {
+  backgroundColor: '#1a0a0a',
+  borderWidth: 1,
+  borderColor: 'rgba(255,68,68,0.4)',
+  borderRadius: 14,
+  padding: 20,
+  alignItems: 'center',
+  marginBottom: 20,
+},
+remateDot: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: colors.error,
+  marginBottom: 8,
+},
+remateLabel: {
+  color: colors.error,
+  fontSize: 11,
+  letterSpacing: 2,
+  fontWeight: 'bold',
+},
+remateCountdown: {
+  color: colors.error,
+  fontSize: 48,
+  fontWeight: 'bold',
+  marginVertical: 4,
+},
+remateSubtexto: {
+  color: colors.textMuted,
+  fontSize: 12,
+},
+resultadoBox: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.gold,
+  borderRadius: 14,
+  padding: 28,
+  alignItems: 'center',
+  marginBottom: 20,
+},
+resultadoIcono: {
+  fontSize: 48,
+  marginBottom: 12,
+},
+resultadoTitulo: {
+  color: colors.textPrimary,
+  fontSize: 22,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+resultadoMonto: {
+  color: colors.gold,
+  fontSize: 28,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+resultadoTexto: {
+  color: colors.textSecondary,
+  fontSize: 13,
+  textAlign: 'center',
 },
 });

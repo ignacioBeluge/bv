@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView
+  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, Alert
 } from 'react-native';
 import { colors } from '../theme/colors';
-import { obtenerSubasta } from '../api/subastas';
+import { obtenerSubasta, obtenerItemEnRemate  } from '../api/subastas';
 
 export default function DetalleSubastaScreen({ route, navigation }) {
   const { id } = route.params;
@@ -21,6 +21,30 @@ export default function DetalleSubastaScreen({ route, navigation }) {
       setError('No se pudo cargar el detalle de la subasta');
     } finally {
       setCargando(false);
+    }
+  }
+
+  async function conectarseASubasta() {
+    try {
+      const remate = await obtenerItemEnRemate(id);
+
+      if (!remate.hayRemateActivo) {
+        // No hay ningún ítem en remate ahora
+        Alert.alert(
+          'Sin remate activo',
+          'En este momento no hay ningún artículo siendo subastado. Volvé más tarde.'
+        );
+        return;
+      }
+
+      // Hay un ítem en remate → ir a elegir medio de pago y después pujar
+      navigation.navigate('SeleccionarMedioPago', {
+        subastaId: id,
+        itemId: remate.itemId,
+        descripcion: remate.descripcion,
+      });
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo verificar el estado de la subasta');
     }
   }
 
@@ -94,19 +118,10 @@ export default function DetalleSubastaScreen({ route, navigation }) {
       {/* Botón 2: Conectarse en vivo */}
       <TouchableOpacity
         style={styles.botonPrimario}
-        onPress={() => {
-          // Si tiene ítems, va a pujar por el primero. En real elegiría cuál.
-          if (cantidadItems > 0) {
-            navigation.navigate('Puja', {
-              subastaId: id,
-              itemId: subasta.items[0].id,
-              descripcion: subasta.items[0].descripcion,
-            });
-          }
-        }}
+        onPress={conectarseASubasta}
       >
-        <Text style={styles.botonPrimarioText}>⚡ CONECTARSE A LA SUBASTA</Text>
-      </TouchableOpacity>
+      <Text style={styles.botonPrimarioText}>⚡ CONECTARSE A LA SUBASTA</Text>
+    </TouchableOpacity>
     </ScrollView>
   );
 }
