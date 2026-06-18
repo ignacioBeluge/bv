@@ -5,6 +5,7 @@ import {
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
 import { listarSubastas } from '../api/subastas';
+import { contarNoLeidas } from '../api/notificaciones';
 
 export default function HomeScreen({ navigation }) {
   const { usuario } = useAuth();
@@ -12,7 +13,20 @@ export default function HomeScreen({ navigation }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
+  const [noLeidas, setNoLeidas] = useState(0);
 
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      try {
+        const cantidad = await contarNoLeidas();
+        setNoLeidas(cantidad);
+      } catch (e) {
+        // si falla, dejamos 0
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   // Trae las subastas del backend
   async function cargarSubastas() {
@@ -62,16 +76,32 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.bienvenido}>BIENVENIDO</Text>
-          <Text style={styles.nombre}>{usuario?.nombre}</Text>
+  <View>
+    <Text style={styles.bienvenido}>BIENVENIDO</Text>
+    <Text style={styles.nombre}>{usuario?.nombre}</Text>
+  </View>
+
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+    {/* Campanita con badge */}
+    <TouchableOpacity
+      style={styles.campana}
+      onPress={() => navigation.navigate('Notificaciones')}
+    >
+      <Text style={styles.campanaIcono}>🔔</Text>
+      {noLeidas > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{noLeidas > 9 ? '9+' : noLeidas}</Text>
         </View>
-        <View style={styles.categoriaBadge}>
-          <Text style={styles.categoriaText}>{usuario?.categoria?.toUpperCase()}</Text>
-        </View>
-      </View>
+      )}
+    </TouchableOpacity>
+
+    {/* Badge de categoría que ya tenías */}
+    <View style={styles.categoriaBadge}>
+      <Text style={styles.categoriaText}>{usuario?.categoria?.toUpperCase()}</Text>
+    </View>
+  </View>
+</View>
 
       {/* Filtros por categoría */}
       <View style={styles.filtrosContainer}>
@@ -271,5 +301,24 @@ chipTextActivo: {
   color: colors.background,
   fontWeight: 'bold',
 },
+
+campana: {
+  position: 'relative',
+  padding: 4,
+},
+campanaIcono: { fontSize: 22 },
+badge: {
+  position: 'absolute',
+  top: -2,
+  right: -4,
+  backgroundColor: colors.error,
+  borderRadius: 9,
+  minWidth: 18,
+  height: 18,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 4,
+},
+badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
 
 });

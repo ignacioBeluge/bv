@@ -19,6 +19,7 @@ import DetalleArticuloScreen from '../screens/DetalleArticuloScreen';
 import SeguroScreen from '../screens/SeguroScreen';
 import MultasScreen from '../screens/MultasScreen';
 import SeleccionarMedioPagoScreen from '../screens/SeleccionarMedioPagoScreen';
+import NotificacionesScreen from '../screens/NotificacionesScreen';
 
 
 
@@ -54,6 +55,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Seguro" component={SeguroScreen} />
         <Stack.Screen name="Multas" component={MultasScreen} />
         <Stack.Screen name="SeleccionarMedioPago" component={SeleccionarMedioPagoScreen} />
+        <Stack.Screen name="Notificaciones" component={NotificacionesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
