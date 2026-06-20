@@ -19,6 +19,19 @@ export default function DetalleArticuloScreen({ route, navigation }) {
     referencia: 'Presentar DNI y código de artículo',
   };
 
+  // Convierte EN_REVISION → "En revisión", PENDIENTE_ENVIO → "Pendiente envío", etc.
+  const ESTADOS_LABEL = {
+    EN_REVISION: 'En revisión',
+    PENDIENTE_ENVIO: 'Pendiente envío',
+    ENVIADO: 'Enviado',
+    PRECIO_ASIGNADO: 'Precio asignado',
+    RECHAZADO: 'Rechazado',
+    ACEPTADO: 'Aceptado',
+    CANCELADO: 'Cancelado',
+    EN_SUBASTA: 'En subasta',
+    VENDIDO: 'Vendido',
+  };
+
   async function cargar() {
     setCargando(true);
     try {
@@ -115,8 +128,9 @@ export default function DetalleArticuloScreen({ route, navigation }) {
 
       {/* Estado actual */}
       <View style={styles.estadoBox}>
-        <Text style={styles.estadoLabel}>ESTADO</Text>
-        <Text style={styles.estadoValor}>{articulo.estado.replace(/_/g, ' ')}</Text>
+        <Text style={styles.estadoValor}>
+          {ESTADOS_LABEL[articulo.estado] || articulo.estado}
+          </Text>
       </View>
 
       {/* Si fue rechazado, mostrar el motivo */}
@@ -194,6 +208,63 @@ export default function DetalleArticuloScreen({ route, navigation }) {
         </View>
       )}
 
+      {/* EN_SUBASTA: informar fecha, hora, lugar, valor base y comisiones */}
+      {articulo.estado === 'EN_SUBASTA' && (
+        <View style={styles.subastaBox}>
+          <Text style={styles.subastaTitulo}>🔨 Tu artículo está en subasta</Text>
+          <Text style={styles.subastaTexto}>
+            Tu pieza fue incluida en una subasta. Estos son los detalles:
+          </Text>
+
+          <View style={styles.subastaDatos}>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📅 Fecha</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaFecha || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>🕐 Hora</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaHora || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📍 Lugar</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaLugar || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>💰 Valor base</Text>
+              <Text style={styles.subastaValor}>${articulo.valorBase}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📊 Comisión</Text>
+              <Text style={styles.subastaValor}>${articulo.comisionSubasta}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* VENDIDO: el artículo se remató con éxito */}
+      {articulo.estado === 'VENDIDO' && (
+              <View style={styles.vendidoDatos}>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>💰 Precio de venta</Text>
+          <Text style={styles.subastaValor}>${articulo.precioVenta}</Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>📊 Comisión empresa</Text>
+          <Text style={styles.subastaValor}>${articulo.comisionVenta}</Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>💵 Recibís</Text>
+          <Text style={[styles.subastaValor, { color: colors.success }]}>
+            ${(Number(articulo.precioVenta) - Number(articulo.comisionVenta)).toLocaleString('es-AR')}
+          </Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>📍 Lugar</Text>
+          <Text style={styles.subastaValor}>{articulo.subastaLugar || '—'}</Text>
+        </View>
+      </View>
+      )}
+
       {/* PRECIO_ASIGNADO: mostrar condiciones + botones aceptar/rechazar */}
       {articulo.estado === 'PRECIO_ASIGNADO' && (
         <>
@@ -214,16 +285,15 @@ export default function DetalleArticuloScreen({ route, navigation }) {
               <Text style={styles.botonRechazarText}>RECHAZAR</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.botonAceptar}
-              onPress={() => responder(true)}
-              disabled={procesando}
-            >
-              {procesando ? (
-                <ActivityIndicator color={colors.background} />
-              ) : (
-                <Text style={styles.botonAceptarText}>ACEPTAR</Text>
-              )}
-            </TouchableOpacity>
+  style={styles.botonAceptar}
+  onPress={() => navigation.navigate('SeleccionarCuentaCobro', {
+    productoId: id,
+    nombreArticulo: articulo.nombre,
+  })}
+  disabled={procesando}
+>
+  <Text style={styles.botonAceptarText}>ACEPTAR</Text>
+</TouchableOpacity>
           </View>
         </>
       )}
@@ -362,4 +432,67 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  subastaBox: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.gold,
+  borderRadius: 12,
+  padding: 20,
+  marginTop: 16,
+},
+subastaTitulo: {
+  color: colors.gold,
+  fontSize: 16,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+subastaTexto: {
+  color: colors.textSecondary,
+  fontSize: 13,
+  marginBottom: 16,
+},
+subastaDatos: {
+  backgroundColor: colors.background,
+  borderRadius: 10,
+  padding: 14,
+},
+subastaFila: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  paddingVertical: 8,
+  borderBottomWidth: 0.5,
+  borderBottomColor: colors.border,
+},
+subastaLabel: { color: colors.textSecondary, fontSize: 13 },
+subastaValor: { color: colors.textPrimary, fontSize: 13, fontWeight: '500' },
+vendidoBox: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.success,
+  borderRadius: 12,
+  padding: 20,
+  marginTop: 16,
+  alignItems: 'center',
+},
+vendidoIcono: { fontSize: 40, marginBottom: 8 },
+vendidoTitulo: {
+  color: colors.success,
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+vendidoTexto: {
+  color: colors.textSecondary,
+  fontSize: 13,
+  textAlign: 'center',
+  marginBottom: 16,
+  lineHeight: 19,
+},
+vendidoDatos: {
+  backgroundColor: colors.background,
+  borderRadius: 10,
+  padding: 14,
+  alignSelf: 'stretch',
+},
+
 });

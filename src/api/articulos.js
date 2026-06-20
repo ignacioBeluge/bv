@@ -19,8 +19,11 @@ export async function obtenerArticulo(id) {
 }
 
 // POST aceptar o rechazar el precio propuesto
-export async function responderCondiciones(id, acepta) {
-  const response = await client.post(`/articulos/${id}/responder`, { acepta });
+export async function responderCondiciones(id, acepta, cuentaCobro = null) {
+  const response = await client.post(`/articulos/${id}/responder`, {
+    acepta,
+    cuentaCobro,
+  });
   return response.data;
 }
 
