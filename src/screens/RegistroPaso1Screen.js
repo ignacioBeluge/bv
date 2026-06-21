@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Alert, ActivityIndicator, ScrollView
+  Alert, ActivityIndicator, ScrollView, Modal, FlatList
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { registroPaso1 } from '../api/auth';
@@ -18,6 +18,22 @@ export default function RegistroPaso1Screen({ navigation }) {
   const [numeroPais, setNumeroPais] = useState(null);
   const [fotoFrente, setFotoFrente] = useState(null);
   const [fotoDorso, setFotoDorso] = useState(null);
+  const [modalPais, setModalPais] = useState(false);
+
+  const PAISES = [
+    { numero: 1, nombre: 'Argentina' },
+    { numero: 2, nombre: 'Uruguay' },
+    { numero: 3, nombre: 'Chile' },
+    { numero: 4, nombre: 'Brasil' },
+    { numero: 5, nombre: 'Paraguay' },
+    { numero: 6, nombre: 'Bolivia' },
+    { numero: 7, nombre: 'Perú' },
+    { numero: 8, nombre: 'España' },
+    { numero: 9, nombre: 'Estados Unidos' },
+  ];
+
+  // Nombre del país seleccionado (para mostrar en el botón)
+  const paisSeleccionado = PAISES.find((p) => p.numero === numeroPais);
 
   // Pide permiso a la cámara y saca una foto
   async function tomarFoto(lado) {
@@ -126,29 +142,18 @@ export default function RegistroPaso1Screen({ navigation }) {
       />
 
       <Text style={styles.label}>PAÍS</Text>
-        <View style={styles.paisRow}>
-        {[
-            { numero: 1, nombre: 'Argentina' },
-            { numero: 2, nombre: 'Uruguay' },
-            { numero: 3, nombre: 'Chile' },
-        ].map((pais) => (
-            <TouchableOpacity
-            key={pais.numero}
-            style={[
-                styles.paisChip,
-                numeroPais === pais.numero && styles.paisChipActivo,
-            ]}
-            onPress={() => setNumeroPais(pais.numero)}
-            >
-            <Text style={[
-                styles.paisChipText,
-                numeroPais === pais.numero && styles.paisChipTextActivo,
-            ]}>
-                {pais.nombre}
-            </Text>
-            </TouchableOpacity>
-        ))}
-        </View>
+        <TouchableOpacity
+          style={styles.selectorPais}
+          onPress={() => setModalPais(true)}
+        >
+          <Text style={[
+            styles.selectorPaisText,
+            !paisSeleccionado && { color: colors.textMuted }
+          ]}>
+            {paisSeleccionado ? paisSeleccionado.nombre : 'Seleccioná tu país'}
+          </Text>
+          <Text style={styles.selectorPaisFlecha}>▾</Text>
+        </TouchableOpacity>
 
       {/* Foto DNI — abre la cámara al tocar */}
       <Text style={styles.label}>FOTO DEL DNI</Text>
@@ -176,6 +181,44 @@ export default function RegistroPaso1Screen({ navigation }) {
           <Text style={styles.buttonText}>CONTINUAR</Text>
         )}
       </TouchableOpacity>
+
+
+
+      {/* Modal selector de país */}
+      <Modal
+        visible={modalPais}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalPais(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalPais(false)}
+        >
+          <View style={styles.modalContenido}>
+            <Text style={styles.modalTitulo}>Elegí tu país</Text>
+            <FlatList
+              data={PAISES}
+              keyExtractor={(item) => item.numero.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setNumeroPais(item.numero);
+                    setModalPais(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{item.nombre}</Text>
+                  {numeroPais === item.numero && (
+                    <Text style={{ color: colors.gold }}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -270,4 +313,45 @@ fotoBox: {
   padding: 24,
   alignItems: 'center',
 },
+selectorPais: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 10,
+  padding: 14,
+  marginTop: 4,
+},
+selectorPaisText: { color: colors.textPrimary, fontSize: 14 },
+selectorPaisFlecha: { color: colors.gold, fontSize: 14 },
+modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.6)',
+  justifyContent: 'flex-end',
+},
+modalContenido: {
+  backgroundColor: colors.surface,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  padding: 20,
+  maxHeight: '60%',
+},
+modalTitulo: {
+  color: colors.textPrimary,
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 16,
+},
+modalItem: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingVertical: 14,
+  borderBottomWidth: 0.5,
+  borderBottomColor: colors.border,
+},
+modalItemText: { color: colors.textPrimary, fontSize: 15 },
+
 });

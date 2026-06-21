@@ -21,6 +21,8 @@ import MultasScreen from '../screens/MultasScreen';
 import SeleccionarMedioPagoScreen from '../screens/SeleccionarMedioPagoScreen';
 import NotificacionesScreen from '../screens/NotificacionesScreen';
 import SeleccionarCuentaCobroScreen from '../screens/SeleccionarCuentaCobroScreen';
+import MetricasScreen from '../screens/MetricasScreen';
+
 
 
 
@@ -59,7 +61,7 @@ export default function AppNavigator() {
         <Stack.Screen name="SeleccionarMedioPago" component={SeleccionarMedioPagoScreen} />
         <Stack.Screen name="Notificaciones" component={NotificacionesScreen} />
         <Stack.Screen name="SeleccionarCuentaCobro" component={SeleccionarCuentaCobroScreen} />
-
+        <Stack.Screen name="Metricas" component={MetricasScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
