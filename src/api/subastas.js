@@ -45,3 +45,17 @@ export async function obtenerHistorialPujas(subastaId, itemId) {
   const response = await client.get(`/auctions/${subastaId}/items/${itemId}/bids`);
   return response.data; // [{ pujaId, monto, numeroPostor, esMia }]
 }
+
+// GET estado del remate (polling)
+export async function obtenerEstadoRemate(subastaId, itemId) {
+  const response = await client.get(
+    `/auctions/${subastaId}/items/${itemId}/estado-remate`
+  );
+  return response.data;
+}
+
+// GET qué ítem está en remate activo en la subasta
+export async function obtenerItemEnRemate(subastaId) {
+  const response = await client.get(`/auctions/${subastaId}/item-en-remate`);
+  return response.data; // { hayRemateActivo, itemId, descripcion }
+}

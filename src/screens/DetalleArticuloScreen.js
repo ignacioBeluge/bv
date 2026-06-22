@@ -3,13 +3,34 @@ import {
   View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert
 } from 'react-native';
 import { colors } from '../theme/colors';
-import { obtenerArticulo, responderCondiciones } from '../api/articulos';
+import { obtenerArticulo, responderCondiciones, confirmarEnvio } from '../api/articulos';
 
 export default function DetalleArticuloScreen({ route, navigation }) {
   const { id } = route.params;
   const [articulo, setArticulo] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
+
+  // Dirección fija del depósito de la empresa donde se inspeccionan los artículos
+  const DIRECCION_DEPOSITO = {
+    nombre: 'Depósito Central BidVault',
+    direccion: 'Av. Corrientes 1234, CABA',
+    horario: 'Lunes a Viernes de 9 a 18hs',
+    referencia: 'Presentar DNI y código de artículo',
+  };
+
+  // Convierte EN_REVISION → "En revisión", PENDIENTE_ENVIO → "Pendiente envío", etc.
+  const ESTADOS_LABEL = {
+    EN_REVISION: 'En revisión',
+    PENDIENTE_ENVIO: 'Pendiente envío',
+    ENVIADO: 'Enviado',
+    PRECIO_ASIGNADO: 'Precio asignado',
+    RECHAZADO: 'Rechazado',
+    ACEPTADO: 'Aceptado',
+    CANCELADO: 'Cancelado',
+    EN_SUBASTA: 'En subasta',
+    VENDIDO: 'Vendido',
+  };
 
   async function cargar() {
     setCargando(true);
@@ -27,6 +48,7 @@ export default function DetalleArticuloScreen({ route, navigation }) {
     cargar();
   }, []);
 
+  // Aceptar o rechazar el precio propuesto
   async function responder(acepta) {
     setProcesando(true);
     try {
@@ -44,6 +66,36 @@ export default function DetalleArticuloScreen({ route, navigation }) {
     } finally {
       setProcesando(false);
     }
+  }
+
+  // Confirmar que envió el producto al depósito
+  async function handleConfirmarEnvio() {
+    Alert.alert(
+      'Confirmar envío',
+      '¿Ya enviaste el artículo al depósito?',
+      [
+        { text: 'Todavía no', style: 'cancel' },
+        {
+          text: 'Sí, ya lo envié',
+          onPress: async () => {
+            setProcesando(true);
+            try {
+              await confirmarEnvio(id);
+              Alert.alert(
+                'Envío confirmado',
+                'Te avisaremos cuando inspeccionemos el artículo.',
+                [{ text: 'OK', onPress: () => navigation.goBack() }]
+              );
+            } catch (e) {
+              const mensaje = e.response?.data?.mensaje || 'No se pudo confirmar el envío';
+              Alert.alert('Error', mensaje);
+            } finally {
+              setProcesando(false);
+            }
+          },
+        },
+      ]
+    );
   }
 
   if (cargando) {
@@ -76,8 +128,9 @@ export default function DetalleArticuloScreen({ route, navigation }) {
 
       {/* Estado actual */}
       <View style={styles.estadoBox}>
-        <Text style={styles.estadoLabel}>ESTADO</Text>
-        <Text style={styles.estadoValor}>{articulo.estado.replace('_', ' ')}</Text>
+        <Text style={styles.estadoValor}>
+          {ESTADOS_LABEL[articulo.estado] || articulo.estado}
+          </Text>
       </View>
 
       {/* Si fue rechazado, mostrar el motivo */}
@@ -101,7 +154,118 @@ export default function DetalleArticuloScreen({ route, navigation }) {
         </TouchableOpacity>
       )}
 
-      {/* Si tiene precio asignado, mostrar condiciones + botones */}
+      {/* PENDIENTE_ENVIO: mostrar la dirección del depósito + botón confirmar envío */}
+      {articulo.estado === 'PENDIENTE_ENVIO' && (
+        <View style={styles.envioBox}>
+          <Text style={styles.envioTitulo}>📦 Enviá tu artículo a inspección</Text>
+          <Text style={styles.envioTexto}>
+            La empresa aprobó tu artículo por las fotos. Para continuar, enviá el
+            producto a nuestro depósito para la inspección presencial.
+          </Text>
+
+          <View style={styles.envioDatos}>
+            <Text style={styles.envioLabel}>DEPÓSITO</Text>
+            <Text style={styles.envioValor}>{DIRECCION_DEPOSITO.nombre}</Text>
+
+            <Text style={styles.envioLabel}>DIRECCIÓN</Text>
+            <Text style={styles.envioValor}>{DIRECCION_DEPOSITO.direccion}</Text>
+
+            <Text style={styles.envioLabel}>HORARIO</Text>
+            <Text style={styles.envioValor}>{DIRECCION_DEPOSITO.horario}</Text>
+
+            <Text style={styles.envioLabel}>IMPORTANTE</Text>
+            <Text style={styles.envioValor}>{DIRECCION_DEPOSITO.referencia}</Text>
+          </View>
+
+          <Text style={styles.envioNota}>
+            Una vez que recibamos e inspeccionemos tu artículo, te propondremos un precio.
+          </Text>
+
+          {/* Botón para confirmar el envío */}
+          <TouchableOpacity
+            style={styles.botonEnvio}
+            onPress={handleConfirmarEnvio}
+            disabled={procesando}
+          >
+            {procesando ? (
+              <ActivityIndicator color={colors.background} />
+            ) : (
+              <Text style={styles.botonEnvioText}>YA ENVIÉ EL PRODUCTO</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ENVIADO: esperando que la empresa inspeccione */}
+      {articulo.estado === 'ENVIADO' && (
+        <View style={styles.esperandoBox}>
+          <Text style={styles.esperandoIcono}>📬</Text>
+          <Text style={styles.esperandoTitulo}>Artículo enviado</Text>
+          <Text style={styles.esperandoTexto}>
+            Estamos esperando recibir tu artículo para inspeccionarlo.
+            Te propondremos un precio una vez completada la revisión.
+          </Text>
+        </View>
+      )}
+
+      {/* EN_SUBASTA: informar fecha, hora, lugar, valor base y comisiones */}
+      {articulo.estado === 'EN_SUBASTA' && (
+        <View style={styles.subastaBox}>
+          <Text style={styles.subastaTitulo}>🔨 Tu artículo está en subasta</Text>
+          <Text style={styles.subastaTexto}>
+            Tu pieza fue incluida en una subasta. Estos son los detalles:
+          </Text>
+
+          <View style={styles.subastaDatos}>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📅 Fecha</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaFecha || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>🕐 Hora</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaHora || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📍 Lugar</Text>
+              <Text style={styles.subastaValor}>{articulo.subastaLugar || '—'}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>💰 Valor base</Text>
+              <Text style={styles.subastaValor}>${articulo.valorBase}</Text>
+            </View>
+            <View style={styles.subastaFila}>
+              <Text style={styles.subastaLabel}>📊 Comisión</Text>
+              <Text style={styles.subastaValor}>${articulo.comisionSubasta}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* VENDIDO: el artículo se remató con éxito */}
+      {articulo.estado === 'VENDIDO' && (
+              <View style={styles.vendidoDatos}>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>💰 Precio de venta</Text>
+          <Text style={styles.subastaValor}>${articulo.precioVenta}</Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>📊 Comisión empresa</Text>
+          <Text style={styles.subastaValor}>${articulo.comisionVenta}</Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>💵 Recibís</Text>
+          <Text style={[styles.subastaValor, { color: colors.success }]}>
+            ${(Number(articulo.precioVenta) - Number(articulo.comisionVenta)).toLocaleString('es-AR')}
+          </Text>
+        </View>
+        <View style={styles.subastaFila}>
+          <Text style={styles.subastaLabel}>📍 Lugar</Text>
+          <Text style={styles.subastaValor}>{articulo.subastaLugar || '—'}</Text>
+        </View>
+      </View>
+      )}
+
+      {/* PRECIO_ASIGNADO: mostrar condiciones + botones aceptar/rechazar */}
       {articulo.estado === 'PRECIO_ASIGNADO' && (
         <>
           <View style={styles.precioBox}>
@@ -121,16 +285,15 @@ export default function DetalleArticuloScreen({ route, navigation }) {
               <Text style={styles.botonRechazarText}>RECHAZAR</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.botonAceptar}
-              onPress={() => responder(true)}
-              disabled={procesando}
-            >
-              {procesando ? (
-                <ActivityIndicator color={colors.background} />
-              ) : (
-                <Text style={styles.botonAceptarText}>ACEPTAR</Text>
-              )}
-            </TouchableOpacity>
+  style={styles.botonAceptar}
+  onPress={() => navigation.navigate('SeleccionarCuentaCobro', {
+    productoId: id,
+    nombreArticulo: articulo.nombre,
+  })}
+  disabled={procesando}
+>
+  <Text style={styles.botonAceptarText}>ACEPTAR</Text>
+</TouchableOpacity>
           </View>
         </>
       )}
@@ -187,4 +350,149 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 14, marginTop: 16,
   },
   botonSeguroTexto: { color: colors.gold, fontWeight: '600', fontSize: 14 },
+
+  // Estilos PENDIENTE_ENVIO
+  envioBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 16,
+  },
+  envioTitulo: {
+    color: colors.gold,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  envioTexto: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  envioDatos: {
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+  },
+  envioLabel: {
+    color: colors.textMuted,
+    fontSize: 10,
+    letterSpacing: 1,
+    marginTop: 10,
+  },
+  envioValor: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    marginTop: 2,
+  },
+  envioNota: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  botonEnvio: {
+    backgroundColor: colors.gold,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  botonEnvioText: {
+    color: colors.background,
+    fontWeight: 'bold',
+    fontSize: 14,
+    letterSpacing: 1,
+  },
+
+  // Estilos ENVIADO
+  esperandoBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 24,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  esperandoIcono: { fontSize: 40, marginBottom: 12 },
+  esperandoTitulo: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  esperandoTexto: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  subastaBox: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.gold,
+  borderRadius: 12,
+  padding: 20,
+  marginTop: 16,
+},
+subastaTitulo: {
+  color: colors.gold,
+  fontSize: 16,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+subastaTexto: {
+  color: colors.textSecondary,
+  fontSize: 13,
+  marginBottom: 16,
+},
+subastaDatos: {
+  backgroundColor: colors.background,
+  borderRadius: 10,
+  padding: 14,
+},
+subastaFila: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  paddingVertical: 8,
+  borderBottomWidth: 0.5,
+  borderBottomColor: colors.border,
+},
+subastaLabel: { color: colors.textSecondary, fontSize: 13 },
+subastaValor: { color: colors.textPrimary, fontSize: 13, fontWeight: '500' },
+vendidoBox: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.success,
+  borderRadius: 12,
+  padding: 20,
+  marginTop: 16,
+  alignItems: 'center',
+},
+vendidoIcono: { fontSize: 40, marginBottom: 8 },
+vendidoTitulo: {
+  color: colors.success,
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 8,
+},
+vendidoTexto: {
+  color: colors.textSecondary,
+  fontSize: 13,
+  textAlign: 'center',
+  marginBottom: 16,
+  lineHeight: 19,
+},
+vendidoDatos: {
+  backgroundColor: colors.background,
+  borderRadius: 10,
+  padding: 14,
+  alignSelf: 'stretch',
+},
+
 });

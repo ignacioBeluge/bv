@@ -18,6 +18,12 @@ import PublicarArticuloScreen from '../screens/PublicarArticuloScreen';
 import DetalleArticuloScreen from '../screens/DetalleArticuloScreen';
 import SeguroScreen from '../screens/SeguroScreen';
 import MultasScreen from '../screens/MultasScreen';
+import SeleccionarMedioPagoScreen from '../screens/SeleccionarMedioPagoScreen';
+import NotificacionesScreen from '../screens/NotificacionesScreen';
+import SeleccionarCuentaCobroScreen from '../screens/SeleccionarCuentaCobroScreen';
+import MetricasScreen from '../screens/MetricasScreen';
+
+
 
 
 
@@ -52,6 +58,10 @@ export default function AppNavigator() {
         <Stack.Screen name="DetalleArticulo" component={DetalleArticuloScreen} />
         <Stack.Screen name="Seguro" component={SeguroScreen} />
         <Stack.Screen name="Multas" component={MultasScreen} />
+        <Stack.Screen name="SeleccionarMedioPago" component={SeleccionarMedioPagoScreen} />
+        <Stack.Screen name="Notificaciones" component={NotificacionesScreen} />
+        <Stack.Screen name="SeleccionarCuentaCobro" component={SeleccionarCuentaCobroScreen} />
+        <Stack.Screen name="Metricas" component={MetricasScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

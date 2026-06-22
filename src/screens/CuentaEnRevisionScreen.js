@@ -37,10 +37,10 @@ export default function CuentaEnRevisionScreen({ route, navigation }) {
       <Text style={styles.mensaje}>{mensaje}</Text>
 
       <View style={styles.notaBox}>
-        <Text style={styles.notaTitulo}>Tu ID de usuario:</Text>
-        <Text style={styles.idGrande}>{usuarioId}</Text>
+        <Text style={styles.notaTitulo}>¿Qué sigue?</Text>
         <Text style={styles.notaTexto}>
-          Cuando la empresa apruebe tu cuenta, tocá el botón para continuar.
+          La empresa va a revisar tus datos y la foto de tu DNI. Cuando tu cuenta
+          sea aprobada, vas a poder crear tu contraseña y empezar a usar la app.
         </Text>
       </View>
 

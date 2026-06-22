@@ -19,8 +19,11 @@ export async function obtenerArticulo(id) {
 }
 
 // POST aceptar o rechazar el precio propuesto
-export async function responderCondiciones(id, acepta) {
-  const response = await client.post(`/articulos/${id}/responder`, { acepta });
+export async function responderCondiciones(id, acepta, cuentaCobro = null) {
+  const response = await client.post(`/articulos/${id}/responder`, {
+    acepta,
+    cuentaCobro,
+  });
   return response.data;
 }
 
@@ -33,5 +36,11 @@ export async function obtenerSeguro(productoId) {
 // POST solicitar ampliación de póliza
 export async function ampliarPoliza(productoId) {
   const response = await client.post(`/articulos/${productoId}/seguro/ampliar`);
+  return response.data;
+}
+
+// POST confirmar que envió el producto
+export async function confirmarEnvio(id) {
+  const response = await client.post(`/articulos/${id}/confirmar-envio`);
   return response.data;
 }

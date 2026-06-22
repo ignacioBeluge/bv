@@ -64,17 +64,23 @@ export default function PerfilScreen({ navigation }) {
           <Text style={styles.filaFlecha}>›</Text>
         </TouchableOpacity>
         <View style={styles.separador} />
-        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Próximamente', 'Las notificaciones estarán disponibles en la próxima versión.')}>
-          <Text style={styles.filaIcono}>🔔</Text>
-          <Text style={styles.filaTexto}>Notificaciones</Text>
-          <Text style={styles.filaFlecha}>›</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.fila}
+  onPress={() => navigation.navigate('Notificaciones')}
+>
+  <Text style={styles.filaIcono}>🔔</Text>
+  <Text style={styles.filaTexto}>Notificaciones</Text>
+  <Text style={styles.filaFlecha}>›</Text>
+</TouchableOpacity>
         <View style={styles.separador} />
-        <TouchableOpacity style={styles.fila} onPress={() => Alert.alert('Próximamente', 'Mis métricas estará disponible en la próxima versión.')}>
-          <Text style={styles.filaIcono}>📊</Text>
-          <Text style={styles.filaTexto}>Mis métricas</Text>
-          <Text style={styles.filaFlecha}>›</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.fila}
+  onPress={() => navigation.navigate('Metricas')}
+>
+  <Text style={styles.filaIcono}>📊</Text>
+  <Text style={styles.filaTexto}>Métricas</Text>
+  <Text style={styles.filaFlecha}>›</Text>
+</TouchableOpacity>
       </View>
 
       {/* Sección: ayuda */}

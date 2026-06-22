@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { colors } from '../theme/colors';
-import { misMediosDePago } from '../api/mediosPago';
+import { misMediosDePago, eliminarMedioPago  } from '../api/mediosPago';
 
 export default function MediosPagoScreen({ navigation }) {
   const [medios, setMedios] = useState([]);
@@ -27,16 +27,57 @@ export default function MediosPagoScreen({ navigation }) {
   }, [navigation]);
 
   function renderMedio({ item }) {
-    return (
-      <View style={styles.card}>
-        <Text style={styles.cardIcono}>💳</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.cardTipo}>{item.tipo.replace('_', ' ').toUpperCase()}</Text>
-          <Text style={styles.cardEstado}>
-            {item.verificado === 'si' ? '✅ Verificado' : '⏳ Pendiente'}
-          </Text>
-        </View>
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => {
+        Alert.alert(
+          item.tipo.replace('_', ' ').toUpperCase(),
+          `Estado: ${item.verificado === 'si' ? 'Verificado ✅' : 'Pendiente ⏳'}`,
+          [
+            { text: 'Cerrar', style: 'cancel' },
+            {
+              text: 'Eliminar',
+              style: 'destructive',
+              onPress: () => confirmarEliminar(item.id),
+            },
+          ]
+        );
+      }}
+    >
+      <Text style={styles.cardIcono}>💳</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.cardTipo}>{item.tipo.replace('_', ' ').toUpperCase()}</Text>
+        <Text style={styles.cardEstado}>
+          {item.verificado === 'si' ? '✅ Verificado' : '⏳ Pendiente'}
+        </Text>
       </View>
+      <Text style={styles.cardFlecha}>›</Text>
+    </TouchableOpacity>
+  );
+}
+
+// Confirma y elimina
+function confirmarEliminar(id) {
+    Alert.alert(
+      'Eliminar medio de pago',
+      '¿Seguro que querés eliminar este medio de pago?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await eliminarMedioPago(id);
+              cargar();   // recargar la lista
+            } catch (e) {
+              const mensaje = e.response?.data?.mensaje || 'No se pudo eliminar';
+              Alert.alert('Error', mensaje);
+            }
+          },
+        },
+      ]
     );
   }
 
@@ -99,4 +140,7 @@ const styles = StyleSheet.create({
   botonAgregarText: {
     color: colors.background, fontWeight: 'bold', fontSize: 14, letterSpacing: 1,
   },
+
+  cardFlecha: { color: colors.textMuted, fontSize: 22 },
+  
 });

@@ -11,3 +11,8 @@ export async function crearMedioPago(datos) {
   const response = await client.post('/usuarios/me/medios-pago', datos);
   return response.data;
 }
+
+// DELETE eliminar un medio de pago
+export async function eliminarMedioPago(id) {
+  await client.delete(`/usuarios/me/medios-pago/${id}`);
+}

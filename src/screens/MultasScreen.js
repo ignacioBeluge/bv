@@ -74,7 +74,7 @@ export default function MultasScreen({ navigation }) {
             <View key={i} style={styles.multaCard}>
               <View style={styles.multaHeader}>
                 <Text style={styles.multaArticulo} numberOfLines={1}>
-                  {multa.articulo || `Subasta #${multa.subastaId}`}
+                  Multa por pago incumplido
                 </Text>
                 <View style={[
                   styles.estadoBadge,
@@ -90,18 +90,14 @@ export default function MultasScreen({ navigation }) {
               </View>
 
               <View style={styles.multaFila}>
-                <Text style={styles.multaLabel}>Monto ofertado</Text>
-                <Text style={styles.multaValor}>${multa.montoOfertado?.toLocaleString()}</Text>
-              </View>
-              <View style={styles.multaFila}>
-                <Text style={styles.multaLabel}>Multa (10%)</Text>
+                <Text style={styles.multaLabel}>Multa (10% del ofertado)</Text>
                 <Text style={[styles.multaValor, { color: colors.error }]}>
                   ${multa.montoMulta?.toLocaleString()}
                 </Text>
               </View>
               {multa.fechaVencimiento && (
                 <View style={styles.multaFila}>
-                  <Text style={styles.multaLabel}>Venció</Text>
+                  <Text style={styles.multaLabel}>Plazo límite</Text>
                   <Text style={styles.multaValor}>{formatFecha(multa.fechaVencimiento)}</Text>
                 </View>
               )}
