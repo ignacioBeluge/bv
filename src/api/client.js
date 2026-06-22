@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // IMPORTANTE: la URL del backend.
-const API_URL = 'http://192.168.0.6:8080';
+const API_URL = 'https://bidvault-back-production.up.railway.app';
 
 const client = axios.create({
   baseURL: API_URL,
