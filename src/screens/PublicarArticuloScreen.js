@@ -8,6 +8,7 @@ import { colors } from '../theme/colors';
 import { publicarArticulo } from '../api/articulos';
 
 const MIN_FOTOS = 6;
+const MAX_FOTOS = 10;
 
 export default function PublicarArticuloScreen({ navigation }) {
   const [nombre, setNombre] = useState('');
@@ -104,7 +105,7 @@ export default function PublicarArticuloScreen({ navigation }) {
       />
 
       {/* Fotos */}
-      <Text style={styles.label}>FOTOS ({fotos.length}/{MIN_FOTOS} mínimo)</Text>
+      <Text style={styles.label}>FOTOS ({fotos.length} — mínimo {MIN_FOTOS}, máximo {MAX_FOTOS})</Text>
       <View style={styles.fotosGrid}>
         {fotos.map((foto, index) => (
           <View key={index} style={styles.fotoItem}>
@@ -117,10 +118,12 @@ export default function PublicarArticuloScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         ))}
-        {/* Botón agregar */}
-        <TouchableOpacity style={styles.agregarFoto} onPress={agregarFoto}>
-          <Text style={styles.agregarFotoIcono}>+</Text>
-        </TouchableOpacity>
+        {/* Botón agregar — solo si no se alcanzó el máximo */}
+        {fotos.length < MAX_FOTOS && (
+          <TouchableOpacity style={styles.agregarFoto} onPress={agregarFoto}>
+            <Text style={styles.agregarFotoIcono}>+</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Declaraciones juradas */}
