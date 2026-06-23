@@ -47,32 +47,42 @@ async function cargarDatos() {
   }
 }
 
-  // Polling del estado del remate cada 5 segundos
-useEffect(() => {
-  let intervalo;
+  // Polling cada 5 segundos: remate + historial + límites
+  useEffect(() => {
+    let intervalo;
 
-  async function consultarRemate() {
-    try {
-      const estado = await obtenerEstadoRemate(subastaId, itemId);
-      setRemate(estado);
+    async function consultarTodo() {
+      try {
+        // 1. Estado del remate (countdown)
+        const estado = await obtenerEstadoRemate(subastaId, itemId);
+        setRemate(estado);
 
-      // Si el remate cerró, guardamos el resultado y frenamos el polling
-      if (estado.cerrado) {
-        setResultado(estado);
-        clearInterval(intervalo);
+        // 2. Historial de pujas (para ver las pujas de otros)
+        const hist = await obtenerHistorialPujas(subastaId, itemId);
+        setHistorial(hist);
+
+        // 3. Límites actualizados (la mejor oferta sube con cada puja)
+        const nuevosLimites = await obtenerLimites(subastaId, itemId);
+        setLimites((prev) => {
+          // Actualizamos la mejor oferta, pero respetamos el monto que el usuario eligió en el slider
+          return { ...nuevosLimites };
+        });
+
+        // Si el remate cerró, guardamos el resultado y frenamos el polling
+        if (estado.cerrado) {
+          setResultado(estado);
+          clearInterval(intervalo);
+        }
+      } catch (e) {
+        // si falla una consulta, seguimos intentando
       }
-    } catch (e) {
-      // si falla una consulta, seguimos intentando
     }
-  }
 
-  // Consulta inmediata + cada 5 seg
-  consultarRemate();
-  intervalo = setInterval(consultarRemate, 5000);
+    consultarTodo();
+    intervalo = setInterval(consultarTodo, 5000);
 
-  // Limpiar al salir de la pantalla
-  return () => clearInterval(intervalo);
-}, [subastaId, itemId]);
+    return () => clearInterval(intervalo);
+  }, [subastaId, itemId]);
 
   useEffect(() => {
     cargarDatos();
