@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert
+  ActivityIndicator, Alert, ScrollView
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { colors } from '../theme/colors';
@@ -55,6 +55,7 @@ async function cargarDatos() {
       try {
         // 1. Estado del remate (countdown)
         const estado = await obtenerEstadoRemate(subastaId, itemId);
+        console.log('ESTADO REMATE:', JSON.stringify(estado));
         setRemate(estado);
 
         // 2. Historial de pujas (para ver las pujas de otros)
@@ -137,7 +138,10 @@ async function handlePujar() {
     : Number(limites.pujaMinima) * 2;
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.back}>‹ Volver</Text>
       </TouchableOpacity>
@@ -281,7 +285,7 @@ async function handlePujar() {
           </TouchableOpacity>
         </>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
